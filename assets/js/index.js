@@ -3,53 +3,109 @@
 const cardContainer = document.getElementById("root");
 
 const cardElements = data.map((place) => createPlaceCard(place));
-
 cardContainer.append(...cardElements);
 
 function createPlaceCard(place) {
-  const card = document.createElement("li");
-  card.classList.add("cardWrapper");
+  const imageWrapper = createImageWrapper(place);
+  const contentWrapper = createContentWrapper(place);
 
-  const container = document.createElement("article");
-  container.classList.add("cardContainer");
+  // article.cardContainer
+  const container = createElement(
+    "article",
+    { classNames: ["cardContainer"] },
+    imageWrapper,
+    contentWrapper
+  );
 
-  const imageWrapper = document.createElement("div");
-  imageWrapper.classList.add("cardImageWrapper");
-  // imageWrapper.style.backgroundColor = 'stringToColor(place.name || "")';
-  imageWrapper.style.backgroundColor = "red";
-
-  const initials = document.createElement("div");
-  initials.classList.add("initials");
-  //initials.innerText = place.name[0];
-  initials.append(document.createTextNode(place.name[0] || ""));
-
-  const img = document.createElement("img");
-  img.classList.add("cardImage");
-  img.src = place.profilePicture;
-  img.hidden = true;
-
-  img.addEventListener("error", handleImageError);
-  img.addEventListener("load", handleImageLoad);
-
-  imageWrapper.append(initials, img);
-
-  const contentWrapper = document.createElement("div");
-  contentWrapper.classList.add("contentWrapper");
-
-  const name = document.createElement("h3");
-  name.classList.add("cardName");
-  name.append(document.createTextNode(place.name || ""));
-
-  const description = document.createElement("p");
-  description.classList.add("cardDescription");
-  description.append(document.createTextNode(place.description || ""));
-
-  contentWrapper.append(name, description);
-
-  container.append(imageWrapper, contentWrapper);
-  card.append(container);
+  // li.cardWrapper
+  const card = createElement("li", { classNames: ["cardWrapper"] }, container);
 
   return card;
+}
+
+function createImageWrapper({ name, profilePicture }) {
+  // div.initials
+  const initials = createElement(
+    "div",
+    { classNames: ["initials"] },
+    document.createTextNode(name[0] || "")
+  );
+
+  //img.cardImage
+  const img = createElement("img", {
+    classNames: ["cardImage"],
+    handlers: {
+      error: handleImageError,
+      load: handleImageLoad,
+    },
+  });
+  img.src = profilePicture;
+  img.hidden = true;
+
+  // div.cardImageWrapper
+  const imageWrapper = createElement(
+    "div",
+    {
+      classNames: ["cardImageWrapper"],
+    },
+    initials,
+    img
+  );
+  imageWrapper.style.backgroundColor = stringToColor(name || "");
+
+  return imageWrapper;
+}
+
+function createContentWrapper({ name, description }) {
+  //h3.cardName
+  const cardName = createElement(
+    "h3",
+    { classNames: ["cardName"] },
+    document.createTextNode(name || "")
+  );
+
+  //p.cardDescription
+  const cardDescription = createElement(
+    "p",
+    { classNames: ["cardDescription"] },
+    document.createTextNode(description || "")
+  );
+
+  //div.contentWrapper
+  const contentWrapper = createElement(
+    "div",
+    {
+      classNames: ["contentWrapper"],
+    },
+    cardName,
+    cardDescription
+  );
+  return contentWrapper;
+}
+
+/**
+ *
+ * @param {string} tagName
+ * @param {object} options
+ * @param {string[]} options.classNames - css classes
+ * @param {object} options.handlers - event handlers
+ * @param  {...Node} children
+ * @returns {HTMLElement}
+ */
+function createElement(
+  tagName,
+  { classNames = [], handlers = {} },
+  ...children
+) {
+  const elem = document.createElement(tagName);
+  elem.classList.add(...classNames);
+
+  for (const [eventType, eventHandler] of Object.entries(handlers)) {
+    elem.addEventListener(eventType, eventHandler);
+  }
+
+  elem.append(...children);
+  return elem;
 }
 
 /*
@@ -68,15 +124,15 @@ function handleImageLoad({ target }) {
   UTILS
 */
 
-// function stringToColor(str) {
-//   var hash = 0;
-//   for (var i = 0; i < str.length; i++) {
-//     hash = str.charCodeAt(i) + ((hash << 5) - hash);
-//   }
-//   var colour = "#";
-//   for (var i = 0; i < 3; i++) {
-//     var value = (hash >> (i * 8)) & 0xff;
-//     colour += ("00" + value.toString(16)).substr(-2);
-//   }
-//   return colour;
-// }
+function stringToColor(str) {
+  var hash = 0;
+  for (var i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  var colour = "#";
+  for (var i = 0; i < 3; i++) {
+    var value = (hash >> (i * 8)) & 0xff;
+    colour += ("00" + value.toString(16)).substr(-2);
+  }
+  return colour;
+}
